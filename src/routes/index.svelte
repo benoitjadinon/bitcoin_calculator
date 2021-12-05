@@ -1,12 +1,16 @@
-<script lang="ts" context="module">
+<script lang="ts">
     //export const ssr = false;
     //export const router = false;
-
-    import Transactions from "$lib/Transactions.svelte";
+    import {goto} from "$app/navigation";
     import Chart from "$lib/Chart.svelte";
+    import Footer from "$lib/Footer.svelte";
+
+    export let address = 'bc1qze4r40cpk7pasg6mhc508falh76ua2lgd3mygh';
 </script>
 
-<!--<Chart />-->
-<Transactions />
+<Chart />
 
-<div>if you've found this tool useful, please consider donating some BTC to 34My2uYXSyX8PfjZJXYLpWdBxSjdm1Ksjk</div>
+<input type="text" bind:value={address} class="px-4 py-3 rounded-full shadow" />
+<button on:click={goto('wallet/'+address)} class="shadow">Open</button>
+
+<Footer />

@@ -3,7 +3,7 @@
 </script>
 
 <h1 class="uppercase text-indigo-500">
-    TEST TITLE
+    HEADER
 </h1>
 
 <slot></slot>

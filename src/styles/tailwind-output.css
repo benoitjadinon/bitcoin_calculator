@@ -566,8 +566,17 @@ video {
 [hidden] {
   display: none;
 }
+
+*, ::before, ::after {
+	--tw-ring-offset-shadow: 0 0 #0000;
+	--tw-ring-shadow: 0 0 #0000;
+	--tw-shadow: 0 0 #0000;
+}
 .block {
 	display: block;
+}
+.inline-block {
+	display: inline-block;
 }
 .flex {
 	display: flex;
@@ -580,6 +589,9 @@ video {
 }
 .table-auto {
 	table-layout: auto;
+}
+.cursor-pointer {
+	cursor: pointer;
 }
 .rounded-full {
 	border-radius: 9999px;
@@ -606,4 +618,8 @@ video {
 .text-indigo-500 {
 	--tw-text-opacity: 1;
 	color: rgba(99, 102, 241, var(--tw-text-opacity));
+}
+.shadow {
+	--tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }

@@ -11,11 +11,13 @@
     "build": "yarn run tailwind:build && yarn run build:only"
   },
   "devDependencies": {
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@sveltejs/adapter-static": "^1.0.0-next.21",
     "@sveltejs/kit": "next",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
     "autoprefixer": "^10.4.0",
+    "bitcoin-address-validation": "^2.1.1",
     "concurrently": "^6.4.0",
     "cross-env": "^7.0.3",
     "eslint": "^7.32.0",
@@ -26,6 +28,7 @@
     "prettier-plugin-svelte": "^2.4.0",
     "svelte": "^3.42.6",
     "svelte-check": "^2.2.6",
+    "svelte-fa": "^2.4.0",
     "svelte-preprocess": "^4.9.4",
     "tailwindcss": "^2.2.19",
     "tslib": "^2.3.1",

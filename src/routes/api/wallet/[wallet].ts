@@ -1,20 +1,28 @@
-import {Transaction, Tx, Wallet} from "$lib/domain";
+import {Wallet} from "$lib/domain";
+import type {Transaction} from "$lib/domain";
 import {loadPriceAt} from "../price/[coin]/[timestamp]";
 
 // TODO move to an endpoint, using node library for reading blockchain
 //!! run https://cors-anywhere.herokuapp.com/corsdemo first in browser
 
 export async function get ({ params }) : Promise<Wallet> {
-    const walletId = params.wallet;
+    const walletId = params.address;
+
+    //console.log('wallet');
+    //console.log(walletId);
 
     //const transactions = await loadBlockChainInfo(walletId); // throws too many transactions after some time
     const transactions = await loadBlockCypher(walletId);
 
+    //console.log(transactions);
+
     const wall = new Wallet(
         transactions,
-        transactions.map(a => a.value).reduce((a, b) => a + b),
-        transactions.map(a => a.cost).reduce((a, b) => a + b),
+        transactions.length == 0 ? 0 : transactions.map(a => a.value).reduce((a, b) => a + b),
+        transactions.length == 0 ? 0 : transactions.map(a => a.cost).reduce((a, b) => a + b),
     );
+
+    console.log(wall);
 
     return wall;
 }
@@ -22,7 +30,7 @@ export async function get ({ params }) : Promise<Wallet> {
 
 // BLOCKCHAIN.INFO / .COM
 
-type TxBlockChainInfo = Transaction & { time: number, result: number };
+type TxBlockChainInfo = Transaction & { time: number, result: number; value:number; };
 type WalletBlockChainInfo = Wallet & { total: number; cost: number; };
 
 async function loadBlockChainInfo(walletId: string) : Promise<Transaction[]> {
@@ -39,7 +47,7 @@ async function loadBlockChainInfo(walletId: string) : Promise<Transaction[]> {
 
     const transactions:TxBlockChainInfo[] = json['txs'];
 
-    await Promise.all(transactions.map(async (tx) => {
+    await Promise.all((transactions ?? []).map(async (tx) => {
         tx.value = tx.result;
         tx.date = (new Date(tx.time * 1000));
         tx.cost = tx.value * (await loadPriceAt('BTC', Math.floor(tx.date.getTime() / 1000)));
@@ -66,14 +74,13 @@ async function loadBlockCypher(walletId: string) : Promise<Transaction[]> {
 
     const json:WalletBlocCypher = await res.json();
 
-    const transactions:TxBlocCypher[] = json['txrefs'];
+    const transactions:TxBlocCypher[] = json['txrefs'] ?? [];
 
     await Promise.all(transactions.map(async (tx) => {
         tx.date = new Date(Date.parse(tx.confirmed));
         tx.cost = tx.value * (await loadPriceAt('BTC', Math.floor(tx.date.getTime() / 1000)));
     }));
 
-    console.log(transactions);
     return transactions;
 }
 
