@@ -18,7 +18,6 @@ export async function get ({ params }) : Promise<Wallet> {
                 if (i == 0) e.totalCostUSD = e.costUSD;
                 else e.totalCostUSD = arr[i-1].totalCostUSD + e.costUSD;
             });
-        console.log(transactions);
     }
 
     //load methods should return a Wallet, some calls already have the total balance in their json, no need to calculate
@@ -27,8 +26,6 @@ export async function get ({ params }) : Promise<Wallet> {
         transactions.length == 0 ? 0 : transactions.map(a => a.value).reduce((a, b) => a + b),
         transactions.length == 0 ? 0 : transactions.map(a => a.costUSD).reduce((a, b) => a + b),
     );
-
-    console.log(wall);
 
     return wall;
 }
@@ -66,7 +63,6 @@ export async function get ({ params }) : Promise<Wallet> {
 [0]   ],
 [0]   total: 14658455,
 [0]   cost: 211768770761.19998
-
 */
 
 type TxBlockChainInfo = Transaction & { time: number, result: number; };
@@ -102,6 +98,38 @@ async function loadBlockChainInfo(walletId: string) : Promise<Transaction[]> {
 
 // BLOCKCYPHER https://www.blockcypher.com/dev/bitcoin/#address-api
 
+/*
+address: "bc1qze4r40cpk7pasg6mhc508falh76ua2lgd3mygh"
+balance: 14658455
+final_balance: 14658455
+final_n_tx: 25
+n_tx: 25
+total_received: 14658455
+total_sent: 0
+tx_url: "https://api.blockcypher.com/v1/btc/main/txs/"
+txrefs: (25) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…},
+    {
+    balance: 0.14658455
+    balanceUSD: 8628.3110866925
+    block_height: 710706
+    confirmations: 2103
+    confirmed: "2021-11-21T14:35:28Z"
+    costUSD: 161.282839
+    date: Sun Nov 21 2021 15:35:28 GMT+0100 (Central European Standard Time) {}
+    double_spend: false
+    price: 58862.35
+    ref_balance: 0.14658455
+    spent: false
+    totalCostUSD: 2117.687707612
+    tx_hash: "ab309c7a0f05b598cdaf1cd9cc6f09cf454158431435d0dd53846f4b2f4de074"
+    tx_input_n: -1
+    tx_output_n: 65
+    value: 0.00274
+    }
+]
+unconfirmed_balance: 0
+unconfirmed_n_tx: 0
+*/
 type TxBlocCypher = Transaction & { tx_hash:string, confirmed:string, ref_balance:number }
 type WalletBlocCypher = Wallet & { address:string, balance:number }
 
@@ -120,6 +148,7 @@ async function loadBlockCypher(walletId: string) : Promise<Transaction[]> {
     const transactions:TxBlocCypher[] = json['txrefs'] ?? [];
 
     await Promise.all(transactions.map(async (tx) => {
+        tx.hash = tx.tx_hash;
         tx.date = new Date(Date.parse(tx.confirmed));
         tx.price = await loadPriceAt('BTC', Math.floor(tx.date.getTime() / 1000));
         tx.value = tx.value / 100000000;
