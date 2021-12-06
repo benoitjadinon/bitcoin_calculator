@@ -4,7 +4,6 @@
     import type {LoadOutput, LoadInput} from '@sveltejs/kit';
     import {validate} from 'bitcoin-address-validation';
 
-    //export async function load({ page, fetch, session, stuff }) {
     export async function load(params:LoadInput) : Promise<LoadOutput> {
         const address = params.page.params.wallet;
         if (!validate(address)) return {

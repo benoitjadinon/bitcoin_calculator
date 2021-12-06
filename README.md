@@ -1,24 +1,9 @@
-# create-svelte
+# Bitcoin wallet calculator
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte);
+Are you doing regular Dollar-cost-averaging buys to a bitcoin wallet ? 
+Use this tool to see an overview of the transactions and the gains compared to USD value.
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm init svelte@next
-
-# create a new project in my-app
-npm init svelte@next my-app
-```
-
-> Note: the `@next` is temporary
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Built as a way to learn SvelteKit.
 
 ```bash
 npm run dev
@@ -27,17 +12,7 @@ npm run dev
 npm run dev -- --open
 ```
 
-## Building
-
-Before creating a production version of your app, install an [adapter](https://kit.svelte.dev/docs#adapters) for your target environment. Then:
-
-```bash
-npm run build
-```
-
-> You can preview the built app with `npm run preview`, regardless of whether you installed an adapter. This should _not_ be used to serve your app in production.
-
-### tailwindcss
+### tailwindcss generate
 
 recompile tailwind css with 
 ```postcss src/styles/tailwind.css -o src/styles/tailwind-output.css```
