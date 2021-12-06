@@ -8,18 +8,24 @@ import {loadPriceAt} from "../price/[coin]/[timestamp]";
 export async function get ({ params }) : Promise<Wallet> {
     const walletId = params.address;
 
-    //console.log('wallet');
-    //console.log(walletId);
-
     //const transactions = await loadBlockChainInfo(walletId); // throws too many transactions after some time
     const transactions = await loadBlockCypher(walletId);
 
-    //console.log(transactions);
+    if (transactions.length > 0) {
+        transactions
+            .sort((a,b) => a.date.getTime() - b.date.getTime())
+            .forEach((e, i, arr) => {
+                if (i == 0) e.totalCostUSD = e.costUSD;
+                else e.totalCostUSD = arr[i-1].totalCostUSD + e.costUSD;
+            });
+        console.log(transactions);
+    }
 
+    //load methods should return a Wallet, some calls already have the total balance in their json, no need to calculate
     const wall = new Wallet(
         transactions,
         transactions.length == 0 ? 0 : transactions.map(a => a.value).reduce((a, b) => a + b),
-        transactions.length == 0 ? 0 : transactions.map(a => a.cost).reduce((a, b) => a + b),
+        transactions.length == 0 ? 0 : transactions.map(a => a.costUSD).reduce((a, b) => a + b),
     );
 
     console.log(wall);
@@ -30,7 +36,40 @@ export async function get ({ params }) : Promise<Wallet> {
 
 // BLOCKCHAIN.INFO / .COM
 
-type TxBlockChainInfo = Transaction & { time: number, result: number; value:number; };
+/*
+{
+[0]       hash: 'ab309c7a0f05b598cdaf1cd9cc6f09cf454158431435d0dd53846f4b2f4de074',
+[0]       ver: 1,
+[0]       vin_sz: 1,
+[0]       vout_sz: 67,
+[0]       size: 2319,
+[0]       weight: 8949,
+[0]       fee: 13415,
+[0]       relayed_by: '0.0.0.0',
+[0]       lock_time: 0,
+[0]       tx_index: 4112214926126576,
+[0]       double_spend: false,
+[0]       time: 1637505247,
+[0]       block_index: 710706,
+[0]       block_height: 710706,
+[0]       inputs: [Array],
+[0]       out: [Array],
+[0]       result: 274000,
+[0]       balance: 0.14658455,
+[0]       date: 2021-11-21T14:34:07.000Z,
+[0]       price: 58862.35,
+[0]       value: 274000,
+[0]       costUSD: 16128283900,
+[0]       balanceUSD: 8628.3110866925,
+[0]       totalCostUSD: 211768770761.19998
+[0]     }
+[0]   ],
+[0]   total: 14658455,
+[0]   cost: 211768770761.19998
+
+*/
+
+type TxBlockChainInfo = Transaction & { time: number, result: number; };
 type WalletBlockChainInfo = Wallet & { total: number; cost: number; };
 
 async function loadBlockChainInfo(walletId: string) : Promise<Transaction[]> {
@@ -48,9 +87,13 @@ async function loadBlockChainInfo(walletId: string) : Promise<Transaction[]> {
     const transactions:TxBlockChainInfo[] = json['txs'];
 
     await Promise.all((transactions ?? []).map(async (tx) => {
-        tx.value = tx.result;
         tx.date = (new Date(tx.time * 1000));
-        tx.cost = tx.value * (await loadPriceAt('BTC', Math.floor(tx.date.getTime() / 1000)));
+        tx.price = await loadPriceAt('BTC', Math.floor(tx.date.getTime() / 1000));
+        tx.result = tx.result / 100000000;
+        tx.value = tx.result;
+        tx.costUSD = tx.value * tx.price;
+        tx.balance = tx.balance / 100000000;
+        tx.balanceUSD = (tx.balance) * tx.price;
     }));
 
     return transactions;
@@ -59,7 +102,7 @@ async function loadBlockChainInfo(walletId: string) : Promise<Transaction[]> {
 
 // BLOCKCYPHER https://www.blockcypher.com/dev/bitcoin/#address-api
 
-type TxBlocCypher = Transaction & { tx_hash:string, confirmed:string }
+type TxBlocCypher = Transaction & { tx_hash:string, confirmed:string, ref_balance:number }
 type WalletBlocCypher = Wallet & { address:string, balance:number }
 
 async function loadBlockCypher(walletId: string) : Promise<Transaction[]> {
@@ -78,7 +121,12 @@ async function loadBlockCypher(walletId: string) : Promise<Transaction[]> {
 
     await Promise.all(transactions.map(async (tx) => {
         tx.date = new Date(Date.parse(tx.confirmed));
-        tx.cost = tx.value * (await loadPriceAt('BTC', Math.floor(tx.date.getTime() / 1000)));
+        tx.price = await loadPriceAt('BTC', Math.floor(tx.date.getTime() / 1000));
+        tx.value = tx.value / 100000000;
+        tx.costUSD = tx.value * tx.price;
+        tx.ref_balance = tx.ref_balance / 100000000;
+        tx.balance = tx.ref_balance;
+        tx.balanceUSD = (tx.balance) * tx.price;
     }));
 
     return transactions;
